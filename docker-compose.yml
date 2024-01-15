@@ -1,0 +1,60 @@
+version: '3.6'
+
+services:
+  telegraf:
+    container_name: telegraf
+    image: telegraf:latest
+    network_mode: "host"
+    volumes:
+      -  ./telegraf/telegraf.conf:/etc/telegraf/telegraf.conf
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: always
+
+
+    links:
+      - influxdb
+
+    depends_on:
+      - influxdb 
+
+  
+
+
+  grafana:
+    container_name: grafana
+    image: grafana:latest
+    env_file:
+      - configuration.env
+    
+
+      
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning/:/etc/grafana/provisioning/
+      - ./grafana/dashboards/:/var/lib/grafana/dashboards/
+    
+    links:
+      - influxdb
+    
+    depends_on:
+      - influxdb
+
+
+
+
+
+  influxdb:
+    container_name: influxdb
+    image: influxdb:latest
+    env_file:
+      - configuration.env
+
+    volumes:
+      - ./:/imports
+      - influxdb_data:/var/lib/influxdb
+
+
+
+volumes:
+  grafana_data: {}
+  influxdb_data: {}
