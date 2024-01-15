@@ -9,11 +9,10 @@ services:
       -  ./telegraf/telegraf.conf:/etc/telegraf/telegraf.conf
       - /var/run/docker.sock:/var/run/docker.sock
     restart: always
-
-
     links:
       - influxdb
-
+    ports:
+      - '8125:8125'
     depends_on:
       - influxdb 
 
@@ -23,16 +22,16 @@ services:
   grafana:
     container_name: grafana
     image: grafana:latest
-    env_file:
-      - configuration.env
-    
-
-      
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_INSTALL_PLUGINS=     
     volumes:
       - grafana_data:/var/lib/grafana
       - ./grafana/provisioning/:/etc/grafana/provisioning/
       - ./grafana/dashboards/:/var/lib/grafana/dashboards/
-    
+    ports:
+      - '3000:3000'
     links:
       - influxdb
     
@@ -46,9 +45,14 @@ services:
   influxdb:
     container_name: influxdb
     image: influxdb:latest
-    env_file:
-      - configuration.env
-
+    environment:
+      - INFLUXDB_DB=influx
+      - INFLUXDB_ADMIN_USER=admin
+      - INFLUXDB_ADMIN_PASSWORD=admin
+    
+    ports:
+      - '8086:8086'
+    restart: always
     volumes:
       - ./:/imports
       - influxdb_data:/var/lib/influxdb
